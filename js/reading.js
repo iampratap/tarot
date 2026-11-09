@@ -38,17 +38,6 @@ export function detectTone(question = "") {
   return best;
 }
 
-function ageFromDob(dobStr) {
-  if (!dobStr) return null;
-  const dob = new Date(dobStr);
-  if (Number.isNaN(dob.getTime())) return null;
-  const now = new Date();
-  let age = now.getFullYear() - dob.getFullYear();
-  const m = now.getMonth() - dob.getMonth();
-  if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) age -= 1;
-  return age;
-}
-
 function synthesis(cards, tone, question) {
   const names = cards.map((c) => c.name).join(", ");
   const keywords = cards.flatMap((c) => c.keywords).slice(0, 6).join(", ");
@@ -65,12 +54,9 @@ function synthesis(cards, tone, question) {
   return `${opener}, ${names} speak together. Themes of ${keywords} rise around your question — “${question.trim()}”. ${weight} Take the message as guidance, then choose your next step with clear intention.`;
 }
 
-export function composeReading({ name, dob, question, cards }) {
+export function composeReading({ name, question, cards }) {
   const tone = detectTone(question);
-  const age = ageFromDob(dob);
-  const ageBit = age != null ? ` At ${age}, your life chapter colors how these symbols speak.` : "";
-
-  const greeting = `Dear ${name || "seeker"}, here is your result.${ageBit}`;
+  const greeting = `Dear ${name || "seeker"}, here is your result.`;
   const cardLines = cards.map(
     (card, i) =>
       `Card ${i + 1} — ${card.name}: ${card.meaning}`
@@ -81,12 +67,11 @@ export function composeReading({ name, dob, question, cards }) {
     title: `${name ? `${name}'s` : "Your"} reading`,
     tone,
     paragraphs,
-    prompt: buildAiPrompt({ name, dob, question, cards }),
+    prompt: buildAiPrompt({ name, question, cards }),
   };
 }
 
-export function buildAiPrompt({ name, dob, question, cards }) {
-  const age = ageFromDob(dob);
+export function buildAiPrompt({ name, question, cards }) {
   const cardBlock = cards
     .map(
       (card, i) =>
@@ -96,7 +81,7 @@ export function buildAiPrompt({ name, dob, question, cards }) {
 
   return [
     "You are a thoughtful tarot reader. Give a clear, compassionate three-card reading.",
-    name ? `Seeker: ${name}${age != null ? `, age ${age}` : ""}.` : "",
+    name ? `Seeker: ${name}.` : "",
     `Question: ${question.trim()}`,
     "Cards drawn:",
     cardBlock,

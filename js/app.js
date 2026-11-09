@@ -8,7 +8,6 @@ const SESSION_KEY = "veil-arcana-session";
 
 const state = {
   name: "",
-  dob: "",
   question: "",
   pool: [],
   selected: [],
@@ -19,7 +18,6 @@ const els = {
   screens: [...document.querySelectorAll(".screen")],
   welcomeForm: document.getElementById("welcome-form"),
   name: document.getElementById("user-name"),
-  dob: document.getElementById("user-dob"),
   greeting: document.getElementById("session-greeting"),
   questionForm: document.getElementById("question-form"),
   question: document.getElementById("user-question"),
@@ -83,10 +81,7 @@ function showScreen(id) {
 }
 
 function saveSession() {
-  sessionStorage.setItem(
-    SESSION_KEY,
-    JSON.stringify({ name: state.name, dob: state.dob })
-  );
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify({ name: state.name }));
 }
 
 function loadSession() {
@@ -94,11 +89,9 @@ function loadSession() {
     const raw = sessionStorage.getItem(SESSION_KEY);
     if (!raw) return false;
     const data = JSON.parse(raw);
-    if (!data.name || !data.dob) return false;
+    if (!data.name) return false;
     state.name = data.name;
-    state.dob = data.dob;
     els.name.value = data.name;
-    els.dob.value = data.dob;
     return true;
   } catch {
     return false;
@@ -366,10 +359,8 @@ function goToQuestion() {
 function onWelcomeSubmit(e) {
   e.preventDefault();
   const name = els.name.value.trim();
-  const dob = els.dob.value;
-  if (!name || !dob) return;
+  if (!name) return;
   state.name = name;
-  state.dob = dob;
   saveSession();
   clearReadingState();
   goToQuestion();
@@ -388,7 +379,6 @@ async function onReveal() {
 
   state.reading = composeReading({
     name: state.name,
-    dob: state.dob,
     question: state.question,
     cards: state.selected,
   });
@@ -417,10 +407,8 @@ function onAgain() {
 function onRestart() {
   sessionStorage.removeItem(SESSION_KEY);
   state.name = "";
-  state.dob = "";
   clearReadingState();
   els.name.value = "";
-  els.dob.value = "";
   showScreen("welcome");
 }
 
@@ -453,14 +441,7 @@ function bindEvents() {
   });
 }
 
-function setDobMax() {
-  const today = new Date().toISOString().slice(0, 10);
-  els.dob.max = today;
-  els.dob.min = "1900-01-01";
-}
-
 function init() {
-  setDobMax();
   bindEvents();
   scene = new MysticalScene(els.canvas);
   wiki = new CardWiki({

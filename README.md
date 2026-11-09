@@ -7,7 +7,7 @@ A mystical three-card tarot reading app built with HTML, CSS, JavaScript, and Th
 
 ## Features
 
-- Name and date-of-birth session
+- Name-based session
 - Personal question, animated 3D shuffle
 - Spin a card arc of all 78 cards and choose three (hover to lift, click to choose)
 - Face-down picks that flip one-by-one on the result screen
