@@ -1053,15 +1053,20 @@ a.btn.primary {
     calc(0.75rem + var(--safe-right))
     calc(0.75rem + var(--safe-bottom))
     calc(0.75rem + var(--safe-left));
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
 }
 
 .wiki.is-open {
-  display: grid;
-  place-items: center;
+  display: block;
 }
 
 body.wiki-open {
   overflow: hidden;
+  touch-action: none;
 }
 
 .wiki-fab.is-hidden {
@@ -1070,8 +1075,7 @@ body.wiki-open {
 
 .wiki-shell {
   width: min(980px, 100%);
-  max-height: min(92dvh, 920px);
-  overflow: auto;
+  margin: 0 auto;
   background: rgba(12, 16, 24, 0.94);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -1203,24 +1207,34 @@ body.wiki-open {
   position: absolute;
   inset: 0;
   z-index: 2;
-  place-items: center;
   padding: inherit;
-  background: rgba(5, 7, 12, 0.55);
+  background: rgba(5, 7, 12, 0.88);
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
 }
 
 .wiki-detail.is-open {
   display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  align-content: start;
+  justify-items: center;
+  padding-bottom: calc(1.5rem + var(--safe-bottom));
 }
 
 .wiki-detail > .wiki-detail-close {
-  position: absolute;
-  top: calc(1rem + var(--safe-top));
-  right: calc(1rem + var(--safe-right));
+  position: sticky;
+  top: 0;
+  justify-self: end;
   z-index: 3;
   width: 44px;
   min-width: 44px;
   padding: 0;
   font-size: 1.5rem;
+  margin-bottom: -0.25rem;
 }
 
 .wiki-detail-art,
@@ -1228,26 +1242,33 @@ body.wiki-open {
   width: min(420px, 100%);
 }
 
-.wiki-detail.is-open {
-  grid-template-columns: 1fr;
-  gap: 1rem;
-  align-content: center;
-  justify-items: center;
-}
-
 @media (min-width: 760px) {
   .wiki-detail.is-open {
     grid-template-columns: minmax(180px, 260px) minmax(240px, 380px);
     gap: 1.5rem;
+    align-content: center;
+    align-items: start;
+    padding-top: 2.5rem;
+  }
+
+  .wiki-detail > .wiki-detail-close {
+    position: absolute;
+    top: calc(1rem + var(--safe-top));
+    right: calc(1rem + var(--safe-right));
+    margin: 0;
   }
 }
 
 .wiki-detail-art img {
   width: 100%;
+  max-height: min(48dvh, 420px);
+  object-fit: contain;
   border-radius: 14px;
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
   display: block;
+  margin: 0 auto;
+  background: rgba(0, 0, 0, 0.25);
 }
 
 .wiki-detail-copy {
