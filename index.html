@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Veil & Arcana — Tarot Reading</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <canvas id="bg-canvas" aria-hidden="true"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <button type="button" id="btn-open-wiki" class="wiki-fab" aria-label="Open card wiki">Wiki</button>
+
+  <main id="app">
+    <!-- Welcome -->
+    <section class="screen active" id="screen-welcome" data-screen="welcome" aria-hidden="false">
+      <div class="panel welcome-panel">
+        <p class="eyebrow">A private reading</p>
+        <h1 class="brand">Veil &amp; Arcana</h1>
+        <p class="lede">Enter your name and birth date to open the veil. The cards await your question.</p>
+        <form id="welcome-form" class="form-stack" autocomplete="on">
+          <label>
+            <span>Your name</span>
+            <input type="text" id="user-name" name="name" required maxlength="60" placeholder="As you wish to be known" />
+          </label>
+          <label>
+            <span>Date of birth</span>
+            <input type="date" id="user-dob" name="dob" required />
+          </label>
+          <button type="submit" class="btn primary">Begin session</button>
+        </form>
+        <button type="button" id="btn-welcome-wiki" class="btn ghost wiki-entry">Study the cards</button>
+      </div>
+    </section>
+
+    <!-- Question -->
+    <section class="screen" id="screen-question" data-screen="question" hidden inert aria-hidden="true">
+      <div class="panel">
+        <p class="eyebrow" id="session-greeting">Welcome</p>
+        <h2>Ask the cards</h2>
+        <p class="lede">Hold one clear question in mind. Focus, then write it below.</p>
+        <form id="question-form" class="form-stack">
+          <label>
+            <span>Your question</span>
+            <textarea id="user-question" rows="4" required maxlength="400" placeholder="What guidance do you seek?"></textarea>
+          </label>
+          <button type="submit" class="btn primary">Shuffle the deck</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Shuffle -->
+    <section class="screen" id="screen-shuffle" data-screen="shuffle" hidden inert aria-hidden="true">
+      <div class="panel center-copy">
+        <p class="eyebrow">The veil stirs</p>
+        <h2 id="shuffle-status">Shuffling the cards…</h2>
+        <p class="lede">Breathe. Let the deck find its order.</p>
+        <div class="spinner-ring" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <!-- Select via wheel -->
+    <section class="screen" id="screen-select" data-screen="select" hidden inert aria-hidden="true">
+      <div class="select-header">
+        <p class="eyebrow">Choose with instinct</p>
+        <h2>Select <span id="select-count">0</span> of 3 cards</h2>
+        <p class="lede" id="select-hint">Drag to spin the arc. Hover a card to lift it, then click to choose.</p>
+      </div>
+
+      <div id="chosen-tray" class="chosen-tray" aria-label="Chosen cards">
+        <div class="chosen-slot" data-slot="0"><span>1</span></div>
+        <div class="chosen-slot" data-slot="1"><span>2</span></div>
+        <div class="chosen-slot" data-slot="2"><span>3</span></div>
+      </div>
+
+      <div class="wheel-stage" id="wheel-stage">
+        <div class="wheel-perspective">
+          <div class="card-wheel" id="card-wheel" role="list" aria-label="Tarot card arc"></div>
+        </div>
+        <div class="wheel-focus" aria-hidden="true"></div>
+      </div>
+
+      <div class="wheel-controls">
+        <button type="button" id="btn-wheel-prev" class="btn ghost icon-btn" aria-label="Previous card">‹</button>
+        <button type="button" id="btn-spin" class="btn ghost">Spin</button>
+        <button type="button" id="btn-wheel-next" class="btn ghost icon-btn" aria-label="Next card">›</button>
+      </div>
+      <p class="wheel-tip" id="wheel-tip">Hover the front card to lift it, then click to choose.</p>
+
+      <div class="select-actions" id="select-result-actions">
+        <button type="button" id="btn-reveal" class="btn primary" disabled>See my result</button>
+      </div>
+    </section>
+
+    <!-- Result -->
+    <section class="screen" id="screen-reading" data-screen="reading" hidden inert aria-hidden="true">
+      <div class="panel reading-panel">
+        <p class="eyebrow">Your result</p>
+        <h2 id="reading-title">Your reading</h2>
+        <p class="lede reading-question" id="reading-question"></p>
+        <div id="reading-spread-mini" class="spread-mini"></div>
+        <article id="reading-body" class="reading-body"></article>
+        <div class="select-actions reading-actions">
+          <a id="btn-google-ai" class="btn primary" href="#" target="_blank" rel="noopener noreferrer">Ask Google AI</a>
+          <button type="button" id="btn-again" class="btn ghost">Ask another question</button>
+          <button type="button" id="btn-reading-wiki" class="btn ghost">Card wiki</button>
+          <button type="button" id="btn-restart" class="btn ghost">New session</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Card Wiki / Study -->
+  <aside id="wiki" class="wiki" aria-hidden="true" aria-label="Tarot card wiki">
+    <div class="wiki-shell">
+      <header class="wiki-header">
+        <div>
+          <p class="eyebrow">Study</p>
+          <h2>Card Wiki</h2>
+        </div>
+        <button type="button" id="btn-close-wiki" class="btn ghost icon-btn" aria-label="Close wiki">×</button>
+      </header>
+      <p class="lede wiki-intro">Browse all 78 Rider–Waite cards and learn their upright meanings.</p>
+      <div class="wiki-toolbar">
+        <input type="search" id="wiki-search" placeholder="Search name, suit, or keyword…" autocomplete="off" />
+        <div class="wiki-filters" id="wiki-filters">
+          <button type="button" class="wiki-filter is-active" data-filter="all">All</button>
+          <button type="button" class="wiki-filter" data-filter="major">Major</button>
+          <button type="button" class="wiki-filter" data-filter="wands">Wands</button>
+          <button type="button" class="wiki-filter" data-filter="cups">Cups</button>
+          <button type="button" class="wiki-filter" data-filter="swords">Swords</button>
+          <button type="button" class="wiki-filter" data-filter="pentacles">Pentacles</button>
+        </div>
+      </div>
+      <div id="wiki-grid" class="wiki-grid"></div>
+    </div>
+    <div id="wiki-detail" class="wiki-detail" aria-hidden="true"></div>
+  </aside>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
