@@ -443,13 +443,10 @@ function bindEvents() {
 
 function registerPwa() {
   if (!("serviceWorker" in navigator)) return;
-  const register = () => {
-    navigator.serviceWorker.register("./sw.js").catch(() => {
-      /* offline install optional */
-    });
-  };
-  if (document.readyState === "complete") register();
-  else window.addEventListener("load", register);
+  // ES modules already run after parse; register immediately.
+  navigator.serviceWorker.register("./sw.js").catch(() => {
+    /* offline install optional */
+  });
 }
 
 function init() {
