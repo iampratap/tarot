@@ -443,11 +443,13 @@ function bindEvents() {
 
 function registerPwa() {
   if (!("serviceWorker" in navigator)) return;
-  window.addEventListener("load", () => {
+  const register = () => {
     navigator.serviceWorker.register("./sw.js").catch(() => {
       /* offline install optional */
     });
-  });
+  };
+  if (document.readyState === "complete") register();
+  else window.addEventListener("load", register);
 }
 
 function init() {
