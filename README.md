@@ -2,6 +2,9 @@
 
 A mystical three-card tarot reading app built with HTML, CSS, JavaScript, and Three.js. Uses public-domain Rider–Waite–Smith card artwork.
 
+**Live:** [https://iampratap.github.io/tarot/](https://iampratap.github.io/tarot/)  
+**Repo:** [https://github.com/iampratap/tarot](https://github.com/iampratap/tarot)
+
 ## Features
 
 - Name and date-of-birth session
