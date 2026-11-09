@@ -1057,16 +1057,24 @@ a.btn.primary {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  touch-action: pan-y;
 }
 
 .wiki.is-open {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.wiki.has-detail {
+  overflow: hidden;
+}
+
+.wiki.has-detail .wiki-shell {
+  display: none;
 }
 
 body.wiki-open {
   overflow: hidden;
-  touch-action: none;
 }
 
 .wiki-fab.is-hidden {
@@ -1204,64 +1212,69 @@ body.wiki-open {
 
 .wiki-detail {
   display: none;
-  position: absolute;
-  inset: 0;
+  position: relative;
   z-index: 2;
-  padding: inherit;
-  background: rgba(5, 7, 12, 0.88);
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  touch-action: pan-y;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  background: rgba(5, 7, 12, 0.94);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
 }
 
 .wiki-detail.is-open {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-  align-content: start;
-  justify-items: center;
-  padding-bottom: calc(1.5rem + var(--safe-bottom));
+  display: flex;
+  flex-direction: column;
 }
 
 .wiki-detail > .wiki-detail-close {
-  position: sticky;
-  top: 0;
-  justify-self: end;
+  flex: 0 0 auto;
+  align-self: flex-end;
   z-index: 3;
   width: 44px;
   min-width: 44px;
+  margin: 0.55rem 0.55rem 0;
   padding: 0;
   font-size: 1.5rem;
-  margin-bottom: -0.25rem;
+}
+
+.wiki-detail-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding: 0.65rem 0.85rem calc(1.5rem + var(--safe-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
 }
 
 .wiki-detail-art,
 .wiki-detail-copy {
   width: min(420px, 100%);
+  flex: 0 0 auto;
 }
 
 @media (min-width: 760px) {
-  .wiki-detail.is-open {
+  .wiki-detail-scroll {
+    display: grid;
     grid-template-columns: minmax(180px, 260px) minmax(240px, 380px);
-    gap: 1.5rem;
-    align-content: center;
+    justify-content: center;
+    align-content: start;
     align-items: start;
-    padding-top: 2.5rem;
-  }
-
-  .wiki-detail > .wiki-detail-close {
-    position: absolute;
-    top: calc(1rem + var(--safe-top));
-    right: calc(1rem + var(--safe-right));
-    margin: 0;
+    gap: 1.5rem;
+    padding-top: 1rem;
   }
 }
 
 .wiki-detail-art img {
   width: 100%;
-  max-height: min(48dvh, 420px);
+  max-height: min(42dvh, 380px);
   object-fit: contain;
   border-radius: 14px;
   border: 1px solid var(--line);

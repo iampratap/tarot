@@ -1,10 +1,11 @@
 /* Veil & Arcana — offline shell cache */
-const CACHE = "veil-arcana-v2";
+const CACHE = "veil-arcana-v3";
 const SHELL = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
   "./css/styles.css",
+  "./css/styles.css?v=3",
   "./js/app.js",
   "./js/cards.js",
   "./js/reading.js",

@@ -120,27 +120,34 @@ export class CardWiki {
     const card = DECK.find((c) => c.id === cardId);
     if (!card) return;
     this.activeId = cardId;
+    this.root.classList.add("has-detail");
     this.detail.classList.add("is-open");
     this.detail.setAttribute("aria-hidden", "false");
     this.detail.innerHTML = `
       <button type="button" class="btn ghost icon-btn wiki-detail-close" aria-label="Close card detail">×</button>
-      <div class="wiki-detail-art">
-        <img src="${card.image}" alt="${card.name}" />
-      </div>
-      <div class="wiki-detail-copy">
-        <p class="eyebrow">${card.suit ? `Suit of ${card.suit}` : "Major Arcana"}</p>
-        <h3>${card.name}</h3>
-        <p class="wiki-keywords">${card.keywords.join(" · ")}</p>
-        <p class="wiki-meaning">${card.meaning}</p>
+      <div class="wiki-detail-scroll">
+        <div class="wiki-detail-art">
+          <img src="${card.image}" alt="${card.name}" />
+        </div>
+        <div class="wiki-detail-copy">
+          <p class="eyebrow">${card.suit ? `Suit of ${card.suit}` : "Major Arcana"}</p>
+          <h3>${card.name}</h3>
+          <p class="wiki-keywords">${card.keywords.join(" · ")}</p>
+          <p class="wiki-meaning">${card.meaning}</p>
+        </div>
       </div>
     `;
     this.detail.querySelector(".wiki-detail-close").addEventListener("click", () => {
       this.hideDetail();
     });
+    // Reset scroll so the card art is always visible first
+    const scroller = this.detail.querySelector(".wiki-detail-scroll");
+    if (scroller) scroller.scrollTop = 0;
   }
 
   hideDetail() {
     this.activeId = null;
+    this.root.classList.remove("has-detail");
     this.detail.classList.remove("is-open");
     this.detail.setAttribute("aria-hidden", "true");
     this.detail.innerHTML = "";
