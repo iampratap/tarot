@@ -67,31 +67,24 @@ export function composeReading({ name, question, cards }) {
     title: `${name ? `${name}'s` : "Your"} reading`,
     tone,
     paragraphs,
-    prompt: buildAiPrompt({ name, question, cards }),
+    prompt: buildAiPrompt({ question, cards }),
   };
 }
 
-export function buildAiPrompt({ name, question, cards }) {
-  const cardBlock = cards
-    .map(
-      (card, i) =>
-        `${i + 1}. ${card.name} (${card.arcana}${card.suit ? ` / ${card.suit}` : ""}) — keywords: ${card.keywords.join(", ")}. Meaning: ${card.meaning}`
-    )
-    .join("\n");
+/** Compact Google AI query: question + drawn cards only. */
+export function buildAiPrompt({ question, cards }) {
+  const cardList = cards
+    .map((card, i) => `${i + 1}. ${card.name}`)
+    .join("; ");
 
   return [
-    "You are a thoughtful tarot reader. Give a clear, compassionate three-card reading.",
-    name ? `Seeker: ${name}.` : "",
+    "Tarot reading",
     `Question: ${question.trim()}`,
-    "Cards drawn:",
-    cardBlock,
-    "Please interpret how these three cards answer the question as one combined result. Keep it practical and insightful, about 3 short paragraphs.",
-  ]
-    .filter(Boolean)
-    .join("\n");
+    `Cards: ${cardList}`,
+  ].join("\n");
 }
 
-/** Opens Google AI Mode / Gemini-friendly search with the reading prompt. */
+/** Opens Google AI Mode with the reading query. */
 export function buildGoogleAiUrl(prompt) {
   const q = encodeURIComponent(prompt);
   return `https://www.google.com/search?udm=50&q=${q}`;
