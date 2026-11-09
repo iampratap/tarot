@@ -441,8 +441,18 @@ function bindEvents() {
   });
 }
 
+function registerPwa() {
+  if (!("serviceWorker" in navigator)) return;
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {
+      /* offline install optional */
+    });
+  });
+}
+
 function init() {
   bindEvents();
+  registerPwa();
   scene = new MysticalScene(els.canvas);
   wiki = new CardWiki({
     root: els.wikiRoot,
