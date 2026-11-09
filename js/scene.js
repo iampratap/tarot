@@ -136,10 +136,13 @@ export class MysticalScene {
   _buildShuffleDeck() {
     this.shuffleGroup = new THREE.Group();
     this.shuffleGroup.visible = false;
-    this.shuffleGroup.position.set(0, -0.2, 2.2);
-    for (let i = 0; i < 18; i += 1) {
-      const card = this._makeCardMesh(0.7, 1.18);
-      card.position.set(0, i * 0.012, 0);
+    // Closer to the camera so the shuffle fills the viewport
+    this.shuffleGroup.position.set(0, -0.35, 3.4);
+    for (let i = 0; i < 24; i += 1) {
+      const card = this._makeCardMesh(0.95, 1.58);
+      card.material.opacity = 0.96;
+      card.material.emissiveIntensity = 0.18;
+      card.position.set(0, i * 0.014, 0);
       card.rotation.set(0, 0, 0);
       card.userData.home = card.position.clone();
       card.userData.index = i;
@@ -157,12 +160,15 @@ export class MysticalScene {
     if (this.shuffleActive) return;
     this.shuffleActive = true;
     this.shuffleTime = 0;
+    this.shuffleDuration = 3.6;
     this.shuffleGroup.visible = true;
     this.floatGroup.visible = false;
+    this.camera.userData.shuffleZoom = true;
     this.shuffleCards.forEach((c, i) => {
-      c.position.set(0, i * 0.012, 0);
+      c.position.set(0, i * 0.014, 0);
       c.rotation.set(0, 0, 0);
-      c.material.opacity = 0.9;
+      c.material.opacity = 0.98;
+      c.material.emissiveIntensity = 0.22;
     });
 
     return new Promise((resolve) => {
@@ -178,38 +184,45 @@ export class MysticalScene {
 
     this.shuffleCards.forEach((card, i) => {
       const phase = i / this.shuffleCards.length;
-      if (t < dur * 0.35) {
-        const p = t / (dur * 0.35);
-        const lift = Math.sin(p * Math.PI) * (0.8 + phase);
-        const swirl = p * Math.PI * 2 * (i % 2 === 0 ? 1 : -1);
-        card.position.x = Math.cos(swirl + phase * 6) * (0.2 + p * 1.8);
-        card.position.y = lift + Math.sin(swirl) * 0.35;
-        card.position.z = Math.sin(swirl + phase * 6) * (0.2 + p * 1.2);
+      if (t < dur * 0.28) {
+        // Fan / lift
+        const p = t / (dur * 0.28);
+        const ease = 1 - Math.pow(1 - p, 2);
+        const lift = Math.sin(ease * Math.PI) * (1.1 + phase * 0.6);
+        const swirl = ease * Math.PI * 2.2 * (i % 2 === 0 ? 1 : -1);
+        card.position.x = Math.cos(swirl + phase * 6) * (0.35 + ease * 2.15);
+        card.position.y = lift + Math.sin(swirl) * 0.45 - 0.1;
+        card.position.z = Math.sin(swirl + phase * 6) * (0.35 + ease * 1.45);
         card.rotation.y = swirl;
-        card.rotation.z = Math.sin(swirl) * 0.4;
-      } else if (t < dur * 0.75) {
-        const p = (t - dur * 0.35) / (dur * 0.4);
-        const angle = p * Math.PI * 4 + phase * Math.PI * 2;
-        const radius = 1.6 * (1 - p * 0.35);
+        card.rotation.z = Math.sin(swirl) * 0.55;
+        card.rotation.x = Math.cos(swirl) * 0.25;
+      } else if (t < dur * 0.72) {
+        // Spiral weave
+        const p = (t - dur * 0.28) / (dur * 0.44);
+        const angle = p * Math.PI * 5 + phase * Math.PI * 2;
+        const radius = 2.05 * (1 - p * 0.28);
         card.position.x = Math.cos(angle) * radius;
-        card.position.y = Math.sin(angle * 1.3) * 0.55 + 0.2;
-        card.position.z = Math.sin(angle) * radius * 0.55;
-        card.rotation.y = angle;
-        card.rotation.x = Math.sin(angle) * 0.3;
+        card.position.y = Math.sin(angle * 1.35) * 0.75 + 0.15;
+        card.position.z = Math.sin(angle) * radius * 0.7;
+        card.rotation.y = angle + Math.PI * 0.5;
+        card.rotation.x = Math.sin(angle) * 0.45;
+        card.rotation.z = Math.cos(angle) * 0.3;
       } else {
-        const p = Math.min(1, (t - dur * 0.75) / (dur * 0.25));
+        // Restack
+        const p = Math.min(1, (t - dur * 0.72) / (dur * 0.28));
         const ease = 1 - Math.pow(1 - p, 3);
-        card.position.lerp(new THREE.Vector3(0, i * 0.012, 0), 0.12 + ease * 0.2);
-        card.rotation.x *= 1 - ease * 0.2;
-        card.rotation.y *= 1 - ease * 0.2;
-        card.rotation.z *= 1 - ease * 0.2;
+        const target = new THREE.Vector3(0, i * 0.014, 0);
+        card.position.lerp(target, 0.14 + ease * 0.28);
+        card.rotation.x *= 1 - ease * 0.28;
+        card.rotation.y *= 1 - ease * 0.28;
+        card.rotation.z *= 1 - ease * 0.28;
       }
     });
 
     if (t >= dur) {
       this.shuffleActive = false;
       this.shuffleGroup.visible = false;
-      // Caller decides ambient cards via setAmbientCardsVisible()
+      this.camera.userData.shuffleZoom = false;
       const done = this.shuffleResolve;
       this.shuffleResolve = null;
       if (done) done();
@@ -220,9 +233,11 @@ export class MysticalScene {
     const dt = this.clock.getDelta();
     const t = this.clock.elapsedTime;
 
-    this.camera.position.x = Math.sin(t * 0.12) * 0.35;
+    const zoom = this.camera.userData.shuffleZoom ? 6.35 : 7.2;
+    this.camera.position.z += (zoom - this.camera.position.z) * Math.min(1, dt * 3.2);
+    this.camera.position.x = Math.sin(t * 0.12) * (this.camera.userData.shuffleZoom ? 0.12 : 0.35);
     this.camera.position.y = 0.35 + Math.sin(t * 0.18) * 0.12;
-    this.camera.lookAt(0, 0, 0);
+    this.camera.lookAt(0, this.camera.userData.shuffleZoom ? -0.15 : 0, 0);
 
     if (this.particles) {
       this.particles.rotation.y = t * 0.02;

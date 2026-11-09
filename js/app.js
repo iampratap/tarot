@@ -59,25 +59,67 @@ let wheel = null;
 let wiki = null;
 let screenBeforeWiki = "welcome";
 
-function showScreen(id) {
-  els.screens.forEach((screen) => {
-    const active = screen.dataset.screen === id;
-    screen.classList.toggle("active", active);
-    screen.toggleAttribute("hidden", !active);
-    screen.setAttribute("aria-hidden", active ? "false" : "true");
-    if (active) screen.removeAttribute("inert");
-    else screen.setAttribute("inert", "");
-  });
-  // Tear down the wheel when leaving select so it can't steal focus/a11y
-  if (id !== "select" && wheel) {
-    wheel.destroy();
-    wheel = null;
-  }
-  // Hide floating 3D cards during selection so they don't clutter the tray
-  if (scene) {
-    scene.setAmbientCardsVisible(id !== "select" && id !== "shuffle");
-  }
-  window.scrollTo({ top: 0, behavior: "smooth" });
+let screenTransition = Promise.resolve();
+
+async function showScreen(id) {
+  screenTransition = (async () => {
+    const current = document.querySelector(".screen.active");
+    if (current?.dataset.screen === id) {
+      // Re-assert ambient visibility even if already on this screen
+      if (scene) {
+        scene.setAmbientCardsVisible(id !== "select" && id !== "shuffle");
+      }
+      return;
+    }
+
+    document.body.classList.toggle("is-shuffling", id === "shuffle");
+
+    if (current) {
+      current.classList.add("is-leaving");
+      current.classList.remove("active");
+      await delay(320);
+      current.classList.remove("is-leaving");
+      current.setAttribute("hidden", "");
+      current.setAttribute("aria-hidden", "true");
+      current.setAttribute("inert", "");
+    }
+
+    els.screens.forEach((screen) => {
+      const active = screen.dataset.screen === id;
+      if (!active && screen !== current) {
+        screen.classList.remove("active", "is-entering", "is-leaving");
+        screen.setAttribute("hidden", "");
+        screen.setAttribute("aria-hidden", "true");
+        screen.setAttribute("inert", "");
+      }
+    });
+
+    const next = els.screens.find((s) => s.dataset.screen === id);
+    if (next) {
+      next.removeAttribute("hidden");
+      next.removeAttribute("inert");
+      next.setAttribute("aria-hidden", "false");
+      next.classList.add("is-entering");
+      next.classList.add("active");
+      // Force style, then animate in
+      void next.offsetWidth;
+      requestAnimationFrame(() => {
+        next.classList.remove("is-entering");
+      });
+    }
+
+    // Tear down the wheel when leaving select so it can't steal focus/a11y
+    if (id !== "select" && wheel) {
+      wheel.destroy();
+      wheel = null;
+    }
+    if (scene) {
+      scene.setAmbientCardsVisible(id !== "select" && id !== "shuffle");
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  })();
+
+  return screenTransition;
 }
 
 function saveSession() {
@@ -332,19 +374,21 @@ function escapeHtml(str) {
 }
 
 async function startShuffleFlow() {
-  showScreen("shuffle");
+  await showScreen("shuffle");
   els.shuffleStatus.textContent = "Shuffling the cards…";
   state.pool = shuffleDeck(DECK);
   state.selected = [];
   resetChosenTray();
 
-  const shufflePromise = scene ? scene.playShuffle() : delay(2800);
-  await Promise.all([shufflePromise, delay(1600)]);
+  // Let the HUD settle, then run the full 3D shuffle in clear view
+  await delay(220);
+  const shufflePromise = scene ? scene.playShuffle() : delay(3200);
+  await shufflePromise;
 
   els.shuffleStatus.textContent = "The deck is ready.";
-  await delay(700);
+  await delay(650);
   renderWheel();
-  showScreen("select");
+  await showScreen("select");
 }
 
 function delay(ms) {
@@ -353,7 +397,7 @@ function delay(ms) {
 
 function goToQuestion() {
   els.greeting.textContent = `Welcome, ${state.name}`;
-  showScreen("question");
+  void showScreen("question");
 }
 
 function onWelcomeSubmit(e) {
@@ -392,7 +436,7 @@ async function onReveal() {
   els.readingBody.classList.add("is-hidden");
   document.querySelector(".reading-actions")?.classList.add("is-hidden");
   renderReadingCardsFaceDown();
-  showScreen("reading");
+  await showScreen("reading");
 
   await flipReadingCardsOneByOne();
   revealReadingText(state.reading.paragraphs);
@@ -409,7 +453,7 @@ function onRestart() {
   state.name = "";
   clearReadingState();
   els.name.value = "";
-  showScreen("welcome");
+  void showScreen("welcome");
 }
 
 function openWiki() {
@@ -478,7 +522,7 @@ function init() {
   if (loadSession()) {
     goToQuestion();
   } else {
-    showScreen("welcome");
+    void showScreen("welcome");
   }
 }
 

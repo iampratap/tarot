@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/styles.css?v=3" />
+  <link rel="stylesheet" href="css/styles.css?v=4" />
   <script type="importmap">
   {
     "imports": {
@@ -67,13 +67,12 @@
       </div>
     </section>
 
-    <!-- Shuffle -->
-    <section class="screen" id="screen-shuffle" data-screen="shuffle" hidden inert aria-hidden="true">
-      <div class="panel center-copy">
+    <!-- Shuffle — HUD only; 3D deck plays on the canvas behind -->
+    <section class="screen shuffle-screen" id="screen-shuffle" data-screen="shuffle" hidden inert aria-hidden="true">
+      <div class="shuffle-hud">
         <p class="eyebrow">The veil stirs</p>
         <h2 id="shuffle-status">Shuffling the cards…</h2>
         <p class="lede">Breathe. Let the deck find its order.</p>
-        <div class="spinner-ring" aria-hidden="true"></div>
       </div>
     </section>
 
